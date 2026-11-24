@@ -1,0 +1,102 @@
+[
+  {
+    "epoch": 1,
+    "training_seconds": 3.2301711291074753,
+    "validation_mse": 0.0164891313418746
+  },
+  {
+    "epoch": 2,
+    "training_seconds": 6.3239913657307625,
+    "validation_mse": 0.015379960632324219
+  },
+  {
+    "epoch": 3,
+    "training_seconds": 9.019633911550045,
+    "validation_mse": 0.01446142149567604
+  },
+  {
+    "epoch": 4,
+    "training_seconds": 11.910371720790863,
+    "validation_mse": 0.01384666568338871
+  },
+  {
+    "epoch": 5,
+    "training_seconds": 14.589471109211445,
+    "validation_mse": 0.013545439910888671
+  },
+  {
+    "epoch": 6,
+    "training_seconds": 17.296360798180103,
+    "validation_mse": 0.013290745496749879
+  },
+  {
+    "epoch": 7,
+    "training_seconds": 20.27472560852766,
+    "validation_mse": 0.01319894339442253
+  },
+  {
+    "epoch": 8,
+    "training_seconds": 22.650583997368813,
+    "validation_mse": 0.01304277644753456
+  },
+  {
+    "epoch": 9,
+    "training_seconds": 25.185079850256443,
+    "validation_mse": 0.012694139282405377
+  },
+  {
+    "epoch": 10,
+    "training_seconds": 27.8289827182889,
+    "validation_mse": 0.012675637750327587
+  },
+  {
+    "epoch": 11,
+    "training_seconds": 30.327817521989346,
+    "validation_mse": 0.012597357016801834
+  },
+  {
+    "epoch": 12,
+    "training_seconds": 32.7067077383399,
+    "validation_mse": 0.012485466596484184
+  },
+  {
+    "epoch": 13,
+    "training_seconds": 35.29381187260151,
+    "validation_mse": 0.012317067658901214
+  },
+  {
+    "epoch": 14,
+    "training_seconds": 37.96471068263054,
+    "validation_mse": 0.012257321374118328
+  },
+  {
+    "epoch": 15,
+    "training_seconds": 40.83996879309416,
+    "validation_mse": 0.012227428457140923
+  },
+  {
+    "epoch": 16,
+    "training_seconds": 43.81361795216799,
+    "validation_mse": 0.01210313960313797
+  },
+  {
+    "epoch": 17,
+    "training_seconds": 46.89663644134998,
+    "validation_mse": 0.012198113989830017
+  },
+  {
+    "epoch": 18,
+    "training_seconds": 49.56910290569067,
+    "validation_mse": 0.011936279794573785
+  },
+  {
+    "epoch": 19,
+    "training_seconds": 52.35715816915035,
+    "validation_mse": 0.012058934530615807
+  },
+  {
+    "epoch": 20,
+    "training_seconds": 55.11723207682371,
+    "validation_mse": 0.011948882219195366
+  }
+]

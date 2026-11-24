@@ -386,7 +386,7 @@ Figure~\ref{fig:curves} shows the validation curves over 300 epochs (strong reci
 
 \begin{figure*}[ht]
     \centering
-    \includegraphics[width=\linewidth]{../experiments/comparison_v3.png}
+    \includegraphics[width=\linewidth]{figures/comparison_v3.png}
     \caption{Validation accuracy over 300 epochs (strong recipe).
         Soft Dirac ($\alpha{=}0.3$) and Alternating Flip track closely with the
         baseline; Whitening, ScaleBias+Lookahead, and All Methods fall behind.}
@@ -435,6 +435,26 @@ Under the weak recipe the only augmentation is crop+flip, which preserves patch 
 Table~\ref{tab:epochs} confirms this reading: at epoch~50 whitening leads all methods (53.4\% vs.\ 47.8\% baseline), but the baseline overtakes it by epoch~150 and the gap widens through epoch~300.
 The whitened model starts strong---better initial features---but plateaus earlier because its frozen patch embedding cannot track the representation drift that strong augmentation induces in the rest of the network.
 This is the clearest demonstration in our results that a trick's effect is not a property of the trick alone but of the trick $\times$ recipe interaction.
+
+\paragraph{CNN reconstruction confirms the hypothesis.}
+To test this directly, we run a controlled reconstruction experiment on a CNN encoder-decoder that mirrors the architecture of the original paper.
+The task is to predict the RGB values of randomly masked $4\times4$ pixel blocks (32 of 64 blocks hidden per image); no other augmentation is applied.
+We compare three conditions: random initialisation, trainable whitening (whitened then fine-tuned), and frozen whitening.
+Figure~\ref{fig:reconstruction} shows validation mean squared error (MSE) over 20 epochs.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\linewidth]{figures/cnn_reconstruction.png}
+    \caption{Masked RGB reconstruction on CIFAR-10 (lower MSE is better).
+        Both whitening variants consistently outperform the random baseline.
+        Trainable and frozen whitening are nearly indistinguishable, confirming
+        that freezing does not hurt when inputs are unaugmented.}
+    \label{fig:reconstruction}
+\end{figure}
+
+Both whitening conditions beat the random baseline at every epoch; final MSE is 0.01175 (trainable) and 0.01176 (frozen) versus 0.01195 (random), a $\sim$1.7\% relative improvement.
+Crucially, trainable and frozen whitening perform virtually identically ($\Delta{=}0.000009$ MSE), confirming that the \emph{freezing itself} is not harmful---only the mismatch between the frozen basis and the actual inputs matters.
+Here, masking preserves patch covariance well enough that the whitened filters remain optimal throughout training, exactly the condition absent in the strong classification recipe where Mixup and CutMix destroy that match.
 
 \subsection{Why Alternating Flip Also Flips Sign}
 Alternating flip replaces a stochastic 50\% flip with a deterministic one.
