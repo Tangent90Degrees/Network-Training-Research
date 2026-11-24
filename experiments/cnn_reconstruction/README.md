@@ -1,5 +1,19 @@
 # CNN masked reconstruction
 
+## Paper methods comparison
+
+Run the seven training conditions with a fresh destination from the repository root.
+
+```shell
+python experiments/cnn_reconstruction/run.py --suite paper --output experiments/cnn_reconstruction/outputs/paper_seed42
+```
+
+The baseline uses random encoder filters and ordinary random horizontal flips. Five conditions independently add frozen input whitening, partial identity (Dirac) encoder initialization, a 64× BatchNorm bias learning rate (ScaleBias), scheduled Lookahead weight averaging, or alternating flips. The seventh combines the five. Every epoch records ordinary masked RGB error and six-view error on identical damaged validation images. Six-view evaluation shifts and mirrors the corrupted image, reverses each spatial transform on the prediction, then averages predictions with border-aware weights. Training time excludes both evaluations.
+
+These are the methods in sections 3.2–3.6 of the Airbench paper, applied to the existing reconstruction optimizer (Adam), architecture, masking loss, and budget. ScaleBias here uses the original bias learning-rate rule. The ViT experiments used a different adaptation. Frozen whitening trains the first-layer bias for three epochs. Compare each method against this suite’s baseline. The earlier whitening experiment used Dirac throughout and omitted flips. The single-view curve is saved as comparison.png and both metrics are in each condition’s JSON history. [Paper](https://arxiv.org/abs/2404.00498)
+
+## Original whitening comparison
+
 Run from the repository root in an environment with PyTorch, torchvision, NumPy, and Matplotlib. Supply a fresh output directory for each comparison.
 
 ```shell
@@ -14,7 +28,27 @@ The run writes settings.json, a JSON history per variant, and comparison.png. Lo
 
 ## Code walkthrough
 
-Line numbers refer to run.py. Each entry covers the listed lines in source order. Blank lines separate logical sections.
+The table below documents the [original whitening runner](https://github.com/Tangent90Degrees/Network-Training-Research/blob/27a7ed1/experiments/cnn_reconstruction/run.py). The following walkthrough covers the changes for the paper suite.
+
+### Added and changed lines
+
+| File and lines | Behavior in source order |
+|---|---|
+| methods.py 1–6 | Describe the adaptation and import ceiling division for step counts, PyTorch for tensor operations, layer types, and padding. |
+| 9–16 | Explain the control, enumerate the baseline, five single treatments and combination, and define and document the predicate that activates a treatment individually or in the combination. |
+| 19–25 | Define and document the optimizer factory. Gather BatchNorm biases, identify those tensors by identity, collect remaining parameters, form disjoint groups, and construct Adam with the requested bias rate and common base rate. |
+| 28–33 | Define and document the averaging state. Initialize it with the exact number of optimizer steps including short batches, and clone floating weights and normalization buffers for later interpolation. |
+| 35–46 | Disable gradient recording, define and document the post-step update, and return early between synchronization points. Compute the cubic decay, traverse model state, match floating entries to saved copies, interpolate on each fifth step, and restore the averaged values to the live model. A final incomplete interval restores the last average. |
+| 49–55 | Define and document per-image flip decisions. Reuse the initial orientations in epoch one. For alternating flips, invert them on even epochs and restore them on odd epochs. For random flips draw fresh independent decisions. |
+| 58–66 | Define and document six-view evaluation. Allocate prediction and weight accumulators. Reflect-pad corrupted inputs, read their square side length, loop over the center and two translated crops with paper weights, compute each crop offset, and extract the view. |
+| 67–72 | Predict each crop and its mirror, reverse the mirror, identify matching source and destination pixels, add weighted predictions at valid coordinates, accumulate both views’ weights, and divide per pixel so borders have the correct scale. |
+| run.py 1, 15, 24, 32–33 | Update the module description, import the new method implementations, add a default-on Dirac switch, and apply partial identity initialization only when selected. |
+| 89–94 | Identify the paper suite, select Dirac per condition, choose grouped Adam for the paper comparison or the original optimizer otherwise, and restrict whitening to the named treatments. |
+| 97–103 | Default averaging to disabled, construct the slow state after initialization when selected, start the optimizer step count, seed a separate flip generator, and draw one initial orientation per training image in the paper suite. |
+| 109–112, 115–117 | Select epoch orientations for paper runs. Freeze the whitening bias after three epochs. Look up each shuffled image’s flip flag, move it to the device with broadcast dimensions, and orient the target before masking so input and target match. |
+| 122–124, 129–130 | Count completed optimizer steps and invoke averaging when enabled. Initialize the six-view error total and seed its mask stream identically to ordinary validation. |
+| 135–141 | During paper validation, pass the six-view predictor through the same masked loss, accumulate its image-weighted error, and add the resulting mean to the ordinary epoch record. |
+| 148, 150, 169, 173 | Update the entry-point documentation, expose the suite switch while keeping the earlier default, record the suite in the settings, and select the corresponding list of training conditions. |
 
 | Lines | Purpose and behavior |
 |---|---|
