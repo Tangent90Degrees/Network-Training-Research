@@ -1,0 +1,17 @@
+\section{Conclusion}
+\label{sec:conclusion}
+
+We evaluated four fast-training techniques from a state-of-the-art CNN recipe on a Vision Transformer trained on \cifar{}, under both a weak recipe ($61.7\%$ baseline) and a strong recipe ($81.4\%$ baseline).
+
+Under the weak recipe, representation-quality tricks transfer positively (whitening $+1.3$\pp{}, alternating flip $+0.8$\pp{}) while architecture-specific tricks are harmful (Dirac $-7.9$\pp{}, ScaleBias+Lookahead $-16.0$\pp{}).
+Under the strong recipe the picture partially reverses, with whitening flipping to $-4.4$\pp{} and soft Dirac becoming the only net-positive trick ($+0.4$\pp{}).
+
+The central lesson is that trick transferability is a \emph{trick~$\times$~recipe} interaction, not a fixed architectural property.
+Frozen whitening is beneficial only when training augmentation preserves the patch statistics of the whitening basis; Mixup and CutMix destroy that match.
+Dirac init is harmful when augmentation is too weak to quickly break attention symmetry, and mildly helpful when it is strong enough.
+Lookahead conflicts with any monotonically decaying LR schedule regardless of architecture.
+
+A controlled CNN masked-reconstruction experiment directly confirmed the whitening mechanism: trainable and frozen whitening perform identically when inputs are unaugmented, isolating the input-distribution mismatch as the sole cause of the reversal.
+
+\paragraph{Future work.}
+The most direct next steps are: (1) learnable (unfrozen) whitening, which should recover whitening's benefit under strong augmentation; (2) decayed soft Dirac ($\alpha$ annealed to 0), which may turn further positive; (3) Lookahead paired with a flat LR to remove the schedule conflict; and (4) an all-methods combination using all three fixes, to test whether the corrected tricks compose additively.

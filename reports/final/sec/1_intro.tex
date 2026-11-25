@@ -1,0 +1,23 @@
+\section{Introduction}
+\label{sec:intro}
+
+The dominant paradigm for image classification has shifted from hand-crafted convolutional networks to Vision Transformers~\cite{dosovitskiy2021vit}, yet many practical training recipes remain rooted in CNN-era knowledge: specific weight initialisations, output-layer scaling, and augmentation strategies devised with convolution in mind.
+
+Garg~\etal~\cite{garg2024cifar10} packaged four such techniques into a record-breaking \cifar{} run---$94\%$ accuracy in under 3.3 seconds on a single RTX 4090.
+Their approach raises a natural question: how much of the gain comes from properties specific to convolutional inductive bias, and how much is transferable to other architectures?
+
+We answer this empirically for the Vision Transformer, using \cifar{} as a controlled testbed.
+Our main contributions are:
+\begin{enumerate}[leftmargin=*,topsep=2pt,itemsep=1pt]
+    \item Two ViT baselines: a \textbf{weak recipe} ($61.7\%$, 100 epochs, basic augmentation) and a \textbf{strong recipe} ($81.4\%$, 300 epochs, RandAugment + Mixup/CutMix + DropPath).
+    \item Per-trick ablations under both recipes, isolating the effect of each of the four CNN techniques.
+    \item An analysis of why the same trick can help under one recipe and hurt under another, with particular attention to the frozen-whitening/augmentation conflict.
+    \item A controlled CNN masked-reconstruction experiment that directly confirms the conflict mechanism.
+\end{enumerate}
+
+Our central finding is that trick transferability is a \emph{trick~$\times$~recipe} interaction.
+Frozen patch whitening is beneficial under basic augmentation but harmful under strong augmentation; soft Dirac init is the only trick net-positive under the strong recipe.
+Practitioners should evaluate each CNN trick under the full target training recipe before adopting it.
+
+The paper is organised as follows. Section~\ref{sec:related} covers related work. Section~\ref{sec:data} describes the dataset and preprocessing. Section~\ref{sec:methods} details the ViT architecture and each adapted trick. Section~\ref{sec:experiments} presents results, ablations, and mechanistic analyses. Section~\ref{sec:conclusion} concludes with directions for future work.
+

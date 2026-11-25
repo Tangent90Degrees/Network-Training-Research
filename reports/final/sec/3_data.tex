@@ -1,0 +1,28 @@
+\section{Data}
+\label{sec:data}
+
+\paragraph{Dataset.}
+All experiments use \textbf{CIFAR-10}~\cite{krizhevsky2009cifar}, a standard benchmark for image classification consisting of 60{,}000 colour images ($32\times32$ pixels) evenly distributed across 10 classes (airplane, automobile, bird, cat, deer, dog, frog, horse, ship, truck).
+The standard split provides 50{,}000 training images and 10{,}000 test images.
+
+\paragraph{Train/validation split.}
+We hold out 10\% of the training set (5{,}000 images) as a validation set for checkpoint selection, leaving 45{,}000 images for training.
+The split is determined by a fixed random seed and is identical across all experiments so that validation accuracy is directly comparable.
+
+\paragraph{Preprocessing.}
+Raw pixel values in $\{0,\ldots,255\}$ are normalised to $[0,1]$ and then standardised channel-wise using the CIFAR-10 training-set statistics ($\mu = (0.4914, 0.4822, 0.4465)$, $\sigma = (0.2470, 0.2435, 0.2616)$).
+
+\paragraph{Augmentation.}
+The two training recipes differ in the augmentation applied during training (validation and test images are always clean):
+
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+    \item \textbf{Weak recipe:} random $32\times32$ crop from a 4-pixel reflect-padded image, random horizontal flip.
+    \item \textbf{Strong recipe:} same crop and flip, followed by RandAugment ($n{=}2$, $m{=}9$), then Mixup ($\alpha{=}0.8$) or CutMix ($\alpha{=}1.0$) applied at the batch level (each with 50\% probability per batch).
+\end{itemize}
+
+The key difference between recipes is that Mixup and CutMix blend pairs of images at the pixel level, fundamentally changing the distribution seen by the patch embedding.
+This is the mechanism behind the whitening reversal documented in Section~\ref{sec:experiments}: the whitened basis is computed from clean images and therefore mismatches the blended inputs.
+
+\paragraph{Whitening basis.}
+For experiments with frozen patch-whitening initialisation, the patch covariance matrix is computed from the first 5{,}000 training images (clean, before any augmentation), using all overlapping $4\times4$ patches.
+This is identical to the procedure in the original CNN paper~\cite{garg2024cifar10}.

@@ -1,0 +1,70 @@
+% CVPR 2026 Paper Template
+\documentclass[10pt,twocolumn,letterpaper]{article}
+
+% Use final (camera-ready) version
+\usepackage{cvpr}
+
+\input{preamble}
+
+\definecolor{cvprblue}{rgb}{0.21,0.49,0.74}
+\usepackage[pagebackref,breaklinks,colorlinks,allcolors=cvprblue]{hyperref}
+
+\def\paperID{*****}
+\def\confName{CVPR}
+\def\confYear{2026}
+
+% ── Additional packages ────────────────────────────────────────────────────────
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{enumitem}
+\usepackage{subcaption}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,fit,backgrounds,calc}
+\usepackage{parskip}
+
+% ── Macros ─────────────────────────────────────────────────────────────────────
+\newcommand{\cifar}{CIFAR-10}
+\newcommand{\pp}{\,pp}
+\newcommand{\methodA}{Frozen Patch-Whitening}
+\newcommand{\methodB}{Dirac Initialisation}
+\newcommand{\methodC}{ScaleBias + Lookahead}
+\newcommand{\methodD}{Alternating Flip}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\transpose}{\mathsf{T}}
+
+% ── Title / Authors ────────────────────────────────────────────────────────────
+\title{Do CNN Speed-Up Tricks Transfer to Transformers?\\
+    \large Evaluating Fast-Training Techniques on Vision Transformers for \cifar{}}
+
+\author{Siwei LIU\thanks{Equal contribution.}\\
+{\tt\small sliudu@connect.ust.hk}
+\and
+Xingjian ZHANG$^*$\\
+{\tt\small xzhangx@connect.ust.hk}
+\and
+Liwei LI$^*$\\
+{\tt\small llix@connect.ust.hk}
+\\[4pt]
+\normalsize COMP-4471: Deep Learning in Computer Vision --- Course Project\\
+\normalsize The Hong Kong University of Science and Technology}
+
+\begin{document}
+\maketitle
+
+\input{sec/0_abstract}
+\input{sec/1_intro}
+\input{sec/2_related}
+\input{sec/3_data}
+\input{sec/4_methods}
+\input{sec/5_experiments}
+\input{sec/6_conclusion}
+
+{
+    \small
+    \bibliographystyle{ieeenat_fullname}
+    \bibliography{references}
+}
+
+\end{document}
