@@ -1,23 +1,29 @@
-\section{Introduction}
-\label{sec:intro}
+\section{Introduction}\label{sec:intro}
 
-The dominant paradigm for image classification has shifted from hand-crafted convolutional networks to Vision Transformers~\cite{dosovitskiy2021vit}, yet many practical training recipes remain rooted in CNN-era knowledge: specific weight initialisations, output-layer scaling, and augmentation strategies devised with convolution in mind.
+Training efficiency is a central concern in deep learning for computer vision.
+As models grow larger and datasets more complex, reducing the wall-clock time to reach a target accuracy directly lowers research iteration cost and energy consumption.
+This problem spans two important settings: \emph{classification}, which assigns an image to a learned class, and \emph{reconstruction}, which predicts masked or corrupted regions of an image.
+Both settings have seen rapid architectural progress, from convolutional neural networks (CNNs) to Vision Transformers (ViTs)~\cite{dosovitskiy2021vit}, yet efficient training recipes for these newer architectures remain underdeveloped.
 
-Garg~\etal~\cite{garg2024cifar10} packaged four such techniques into a record-breaking \cifar{} run---$94\%$ accuracy in under 3.3 seconds on a single RTX 4090.
-Their approach raises a natural question: how much of the gain comes from properties specific to convolutional inductive bias, and how much is transferable to other architectures?
+A key gap exists in the transfer of training acceleration techniques.
+Garg~\etal~\cite{garg2024cifar10} proposed four methods that dramatically accelerate CNN training on \cifar{}---frozen patch-whitening initialisation, Dirac (identity) initialisation, a ScaleBias output layer with the Lookahead optimiser, and alternating horizontal flip---achieving $94\%$ accuracy in 3.29 seconds on a single {GPU}.
+However, it is unknown whether these methods carry their benefits to \emph{transformer} architectures or to \emph{reconstruction} tasks, where the inductive biases and training dynamics differ substantially from CNN classification.
+Closing this gap is practically important: practitioners routinely apply CNN-era training recipes to ViTs without systematic validation, potentially wasting or even harming training efficiency.
 
-We answer this empirically for the Vision Transformer, using \cifar{} as a controlled testbed.
+We address this gap through a controlled empirical study.
+We ask: \emph{Do the four CNN speed-up tricks of Garg~\etal{} transfer to (a) ViT-based classification and (b) CNN-based masked reconstruction?}
 Our main contributions are:
 \begin{enumerate}[leftmargin=*,topsep=2pt,itemsep=1pt]
-    \item Two ViT baselines: a \textbf{weak recipe} ($61.7\%$, 100 epochs, basic augmentation) and a \textbf{strong recipe} ($81.4\%$, 300 epochs, RandAugment + Mixup/CutMix + DropPath).
-    \item Per-trick ablations under both recipes, isolating the effect of each of the four CNN techniques.
-    \item An analysis of why the same trick can help under one recipe and hurt under another, with particular attention to the frozen-whitening/augmentation conflict.
-    \item A controlled CNN masked-reconstruction experiment that directly confirms the conflict mechanism.
+    \item Two ViT classification baselines on \cifar{}: a \textbf{weak recipe} ($61.7\%$, 100 epochs) and a \textbf{strong recipe} ($81.4\%$, 300 epochs, RandAugment + Mixup/CutMix + DropPath), establishing the accuracy floor against which each trick is measured.
+    \item Per-trick ablations under both recipes, isolating the effect of each technique on training efficiency and final accuracy.
+    \item An analysis of why the same trick can help under one recipe and hurt under another, identifying the \emph{frozen-whitening/augmentation conflict} as the key mechanism.
+    \item A controlled CNN masked-reconstruction experiment that directly tests trick transferability to reconstruction tasks, confirming the conflict mechanism and showing that whitening's benefit is preserved when inputs are unaugmented.
 \end{enumerate}
 
-Our central finding is that trick transferability is a \emph{trick~$\times$~recipe} interaction.
-Frozen patch whitening is beneficial under basic augmentation but harmful under strong augmentation; soft Dirac init is the only trick net-positive under the strong recipe.
-Practitioners should evaluate each CNN trick under the full target training recipe before adopting it.
+Our central finding is that trick transferability is a \emph{trick~$\times$~recipe} interaction, not a fixed property of the trick or the architecture.
+Frozen patch whitening accelerates convergence under basic augmentation ($+1.3$\pp{}) but hurts under strong augmentation ($-4.4$\pp{}); soft Dirac init is the only trick net-positive at the strong recipe level ($+0.4$\pp{}).
+Practitioners should evaluate each CNN trick under the full target training recipe and task before adopting it.
 
-The paper is organised as follows. Section~\ref{sec:related} covers related work. Section~\ref{sec:data} describes the dataset and preprocessing. Section~\ref{sec:methods} details the ViT architecture and each adapted trick. Section~\ref{sec:experiments} presents results, ablations, and mechanistic analyses. Section~\ref{sec:conclusion} concludes with directions for future work.
+The paper is organised as follows. Section~\ref{sec:related} covers related work. Section~\ref{sec:data} describes the dataset and preprocessing. Section~\ref{sec:methods} details the model architecture and each adapted trick. Section~\ref{sec:experiments} presents results, ablations, and mechanistic analyses. Section~\ref{sec:conclusion} concludes.
+
 

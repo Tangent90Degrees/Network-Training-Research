@@ -132,6 +132,67 @@ As Figure~\ref{fig:reconstruction} shows, both trainable and frozen whitening ou
 Critically, trainable and frozen whitening differ by only $\Delta = 0.000009$ MSE, confirming that \emph{freezing itself is not harmful}.
 The reversal in the classification task therefore stems entirely from the mismatch between the frozen basis and the augmented inputs.
 
+\subsection{All Tricks on CNN Reconstruction}
+
+We extend the reconstruction study to test all four tricks individually and combined, using the same masked-RGB task with 20 epochs and no augmentation beyond masking.
+Table~\ref{tab:recon} reports the final validation MSE, and Figure~\ref{fig:reconstruction_full} shows the convergence curves.
+
+\begin{table}[ht]
+    \centering
+    \small
+    \setlength{\tabcolsep}{4pt}
+    \begin{tabular}{lrr}
+        \toprule
+        Variant           & Val MSE (ep 20) & $\Delta$ vs baseline \\
+        \midrule
+        Baseline          & 0.012207 & ---           \\
+        \midrule
+        Frozen whitening  & 0.012042 & $-$1.35\%     \\
+        Alternating flip  & 0.012116 & $-$0.75\%     \\
+        ScaleBias         & 0.012016 & $-$1.56\%     \\
+        Dirac init        & 0.011982 & $-$1.84\%     \\
+        Lookahead         & \underline{0.011581} & $-$5.12\% \\
+        \midrule
+        All methods       & \textbf{0.011075} & $-$9.27\% \\
+        \bottomrule
+    \end{tabular}
+    \caption{Final validation MSE on masked RGB reconstruction (lower is better).
+        $\Delta$ is relative improvement over the baseline MSE.}
+    \label{tab:recon}
+\end{table}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\linewidth]{figures/cnn_reconstruction_full.png}
+    \caption{MSE convergence over 20 epochs for all trick variants on CNN masked reconstruction.
+        All tricks improve over the baseline; Lookahead is the strongest single trick, and all methods combined achieves the best result.}
+    \label{fig:reconstruction_full}
+\end{figure}
+
+The results tell a strikingly different story from the ViT classification experiments.
+\emph{All} tricks reduce validation MSE, every single trick is helpful, and they compose constructively: all methods combined achieves $-9.27\%$ relative improvement, the best result.
+
+Three observations explain why reconstruction behaves differently from classification.
+
+\textbf{(1) Frozen whitening works because there is no augmentation conflict.}
+Masking preserves the patch covariance of the original images, so the frozen whitened basis remains matched to the actual inputs throughout training.
+The $-1.35\%$ improvement mirrors the weak-recipe ViT result ($+1.31$\pp{}) and directly confirms that the reversal under the strong recipe was caused by augmentation mismatch, not by freezing.
+
+\textbf{(2) Lookahead is the strongest single trick ($-5.12\%$).}
+In the ViT experiments, Lookahead conflicted with the cyclic LR schedule.
+Here, we use a flat Adam LR for the reconstruction model---the regime for which Lookahead was originally validated.
+Without the schedule conflict, its slow-weight stabilisation reduces oscillation and produces smooth, monotonic convergence.
+This directly validates our diagnosis from the ViT experiments: Lookahead's harmful interaction was with the decaying LR schedule, not with learning in general.
+
+\textbf{(3) Dirac init helps in a CNN reconstruction model.}
+Unlike in the ViT, where Dirac init collapses self-attention heads into a uniform transformation, the CNN's grouped convolutions are not subject to the same symmetry pathology.
+Near-identity initialisation allows early layers to act as pass-throughs while the decoder learns to predict masked regions, and specialisation emerges gradually.
+The $-1.84\%$ improvement is consistent with its intended behaviour in the original paper.
+
+Together, these results complete the transferability picture.
+When tricks are tested on the architecture and task they were designed for (or on a task that avoids their known failure modes), they are uniformly effective and compose well.
+The failures observed in ViT classification are not intrinsic to the tricks themselves but arise from specific mismatches: frozen whitening with strong augmentation, Dirac init with attention symmetry, and Lookahead with decaying LR schedules.
+
 \subsection{Why Dirac Init Improves With Strong Augmentation}
 
 Full identity initialisation collapses all attention heads to the same transformation at epoch 0:

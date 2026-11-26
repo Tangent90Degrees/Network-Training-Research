@@ -1,24 +1,31 @@
-\section{Related Work}
-\label{sec:related}
+\section{Related Work}\label{sec:related}
 
-\paragraph{Fast training on CIFAR-10.}
-The DAWNBench competition~\cite{coleman2017dawnbench} sparked a line of work on minimising the wall-clock time to reach a target accuracy.
-Key milestones include the ``how to train your ResNet'' series, which identified cyclic learning rates~\cite{smith2019superconvergence} and large-batch SGD as primary levers.
-Garg~\etal~\cite{garg2024cifar10} pushed this further with four complementary tricks---patch whitening, Dirac init, ScaleBias+Lookahead, and alternating flip---reaching 94\% in 3.29 seconds.
+\paragraph{Training acceleration for deep learning.}
+Reducing wall-clock training time without sacrificing accuracy is a longstanding goal.
+The DAWNBench competition~\cite{coleman2017dawnbench} formalised this as a benchmark, spurring work on cyclic learning rates~\cite{smith2019superconvergence}, mixed-precision training, and large-batch {SGD}.
+Garg~\etal~\cite{garg2024cifar10} pushed CNN classification to $94\%$ on \cifar{} in 3.29 seconds using four complementary tricks (patch whitening, Dirac init, ScaleBias+Lookahead, alternating flip).
+Our work investigates whether these same acceleration techniques remain effective when the model architecture (CNN $\to$ ViT) or task (classification $\to$ reconstruction) changes.
 
 \paragraph{Vision Transformers on small datasets.}
-The original ViT~\cite{dosovitskiy2021vit} required large-scale pretraining to outperform CNNs.
-DeiT~\cite{touvron2021deit} showed that careful training recipes (knowledge distillation, strong augmentation) allow ViTs to match ResNets without pretraining.
-Subsequent work~\cite{touvron2022deit3,liu2021swin} confirmed that augmentation strategy is the dominant factor for ViT performance on small datasets, motivating our dual-recipe design.
+The original ViT~\cite{dosovitskiy2021vit} required large-scale pretraining to outperform CNNs on small datasets.
+DeiT~\cite{touvron2021deit} showed that careful training recipes---knowledge distillation, strong augmentation---allow ViTs to match ResNets without pretraining.
+Subsequent work~\cite{touvron2022deit3,liu2021swin} confirmed that augmentation strategy is the dominant factor for ViT efficiency on small datasets.
+Our dual-recipe design (weak vs.\ strong augmentation) is motivated directly by this finding: we test whether CNN tricks that help under simple augmentation remain effective under the state-of-the-art ViT recipe.
+
+\paragraph{Masked reconstruction.}
+Masked image modelling---predicting corrupted or missing pixel regions---has emerged as a powerful self-supervised objective~\cite{he2022masked}.
+CNN encoder-decoders were among the first architectures applied to this task.
+We study whether CNN initialisation tricks (whitening, Dirac init) that accelerate classification training also accelerate the convergence of a CNN reconstruction model, extending the scope of the transferability question beyond classification.
 
 \paragraph{Initialisation for transformers.}
-ReZero~\cite{bachlechner2021rezero} and T-Fixup~\cite{huang2020improve} propose identity-like initialisations for residual transformer blocks, showing that near-identity starts can accelerate training.
-Our Dirac init is a stronger version applied to the attention projections themselves, which we show collapses head diversity.
+ReZero~\cite{bachlechner2021rezero} and T-Fixup~\cite{huang2020improve} propose identity-like initialisations for residual transformer blocks, showing that near-identity starts can remove the need for LR warmup.
+Our Dirac init is a stronger variant applied to the attention projections themselves; we show that full identity collapses head diversity, while soft blending ($\alpha{=}0.3$) can be mildly beneficial.
 
 \paragraph{Patch whitening.}
-Coates~\etal~\cite{coates2011importance} demonstrated that whitened patches improve CNN feature learning.
-The original ViT uses a learned linear projection; our work is the first to study frozen whitened patch embeddings in the context of strong data augmentation, revealing that the frozen-basis/augmentation mismatch is the decisive factor.
+Coates~\etal~\cite{coates2011importance} demonstrated that whitened patch features improve shallow CNN representations.
+The original ViT uses a learned linear projection; our work is the first to study frozen whitened patch embeddings under strong augmentation, revealing that the frozen-basis/augmentation statistics mismatch---not freezing per se---is the decisive factor.
 
 \paragraph{Lookahead.}
-Zhang~\etal~\cite{zhang2019lookahead} introduced Lookahead as a wrapper that stabilises fast-optimizer trajectories via slow-weight interpolation.
-Prior work paired it with flat or mildly decaying LR schedules; we identify the conflict with monotonically decaying schedules (OneCycleLR, cosine decay) as a distinct failure mode.
+Zhang~\etal~\cite{zhang2019lookahead} introduced Lookahead as a wrapper that stabilises fast-optimizer trajectories via slow-weight interpolation, validated primarily with flat or mildly decaying LR schedules.
+We identify the conflict with monotonically decaying schedules (OneCycleLR, cosine decay) as a distinct failure mode independent of architecture.
+
